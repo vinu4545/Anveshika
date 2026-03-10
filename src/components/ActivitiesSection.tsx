@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Mic, Code, MapPin, Trophy, Calculator, Palette, Landmark, Users } from "lucide-react";
+import { useTheme } from "@/theme/ThemeContext";
 
 const activities = [
   { icon: Mic, title: "Expert Lecture Series on IKS", desc: "Renowned scholars sharing ancient wisdom" },
@@ -17,13 +18,18 @@ const ActivitiesSection = () => {
   const ref = useRef(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
+  const { isDark } = useTheme();
 
   const scroll = (dir: number) => {
     scrollRef.current?.scrollBy({ left: dir * 350, behavior: "smooth" });
   };
 
   return (
-    <section id="activities" className="py-24 bg-deep-blue-dark text-foreground" ref={ref}>
+    <section
+      id="activities"
+      className={`py-24 text-foreground ${isDark ? "bg-black" : "bg-background"}`}
+      ref={ref}
+    >
       <div className="container mx-auto px-4 mb-10">
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
@@ -41,11 +47,17 @@ const ActivitiesSection = () => {
           Engage, learn, and innovate through our diverse programs
         </motion.p>
         <div className="flex justify-center gap-3">
-          <button onClick={() => scroll(-1)} className="p-2 rounded-full glass-card hover:bg-primary/10 transition-colors">
-            <ChevronLeft className="w-5 h-5 text-foreground" />
+          <button
+            onClick={() => scroll(-1)}
+            className="p-2 rounded-full glass-card transition-all duration-200 hover:scale-110 hover:bg-[#7c1b1f] hover:text-white"
+          >
+            <ChevronLeft className="w-5 h-5" />
           </button>
-          <button onClick={() => scroll(1)} className="p-2 rounded-full glass-card hover:bg-primary/10 transition-colors">
-            <ChevronRight className="w-5 h-5 text-foreground" />
+          <button
+            onClick={() => scroll(1)}
+            className="p-2 rounded-full glass-card transition-all duration-200 hover:scale-110 hover:bg-[#7c1b1f] hover:text-white"
+          >
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </div>

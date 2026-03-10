@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTheme } from "@/theme/ThemeContext";
 
 import ayurveda from "@/assets/ayurveda.jpg";
 import vedicMath from "@/assets/vedic-math.jpg";
@@ -26,18 +27,23 @@ const IKSDomainsSection = () => {
   const ref = useRef(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
+  const { isDark } = useTheme();
 
   const scroll = (dir: number) => {
     scrollRef.current?.scrollBy({ left: dir * 350, behavior: "smooth" });
   };
 
   return (
-    <section id="iks-domains" className="py-24 relative bg-deep-blue-dark text-foreground" ref={ref}>
+    <section
+      id="iks-domains"
+      className={`py-24 relative text-foreground ${isDark ? "bg-black" : "bg-background"}`}
+      ref={ref}
+    >
       <div className="container mx-auto px-4 mb-10">
         <motion.p
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
-          className="sanskrit-text text-center text-primary/60 text-base mb-4"
+          className="sanskrit-text text-center text-primary/60 text-lg md:text-xl mb-4"
         >
           "सा विद्या या विमुक्तये" — Knowledge is that which liberates
         </motion.p>
@@ -59,11 +65,17 @@ const IKSDomainsSection = () => {
 
         {/* Scroll buttons */}
         <div className="flex justify-center gap-3 mb-6">
-          <button onClick={() => scroll(-1)} className="p-2 rounded-full glass-card hover:bg-primary/10 transition-colors">
-            <ChevronLeft className="w-5 h-5 text-foreground" />
+          <button
+            onClick={() => scroll(-1)}
+            className="p-2 rounded-full glass-card transition-all duration-200 hover:scale-110 hover:bg-[#7c1b1f] hover:text-white"
+          >
+            <ChevronLeft className="w-5 h-5" />
           </button>
-          <button onClick={() => scroll(1)} className="p-2 rounded-full glass-card hover:bg-primary/10 transition-colors">
-            <ChevronRight className="w-5 h-5 text-foreground" />
+          <button
+            onClick={() => scroll(1)}
+            className="p-2 rounded-full glass-card transition-all duration-200 hover:scale-110 hover:bg-[#7c1b1f] hover:text-white"
+          >
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </div>

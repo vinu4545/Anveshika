@@ -40,7 +40,7 @@ const ImpactSection = () => {
         <motion.p
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
-          className="sanskrit-text text-center text-primary/60 text-base mb-4"
+          className="sanskrit-text text-center text-primary/60 text-lg md:text-xl mb-4"
         >
           "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन" — Focus on action, not results
         </motion.p>

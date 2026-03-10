@@ -17,7 +17,7 @@ const CTASection = () => {
         <motion.p
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
-          className="sanskrit-text text-primary/60 text-base mb-4"
+          className="sanskrit-text text-primary/60 text-lg md:text-xl mb-4"
         >
           "योगः कर्मसु कौशलम्" — Excellence in action is Yoga
         </motion.p>
