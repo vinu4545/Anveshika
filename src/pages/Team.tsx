@@ -138,7 +138,7 @@ const getInitials = (name: string) =>
 
 const Team = () => {
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
 
       <main className="relative min-h-screen pt-24 pb-16">

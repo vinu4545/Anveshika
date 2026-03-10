@@ -13,11 +13,11 @@ interface ThemeProviderProps {
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
+    if (typeof window === "undefined") return false;
     const stored = window.localStorage.getItem("anveshika-theme");
     if (stored === "light") return false;
     if (stored === "dark") return true;
-    return true;
+    return false;
   });
 
   useEffect(() => {

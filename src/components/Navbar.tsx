@@ -4,6 +4,7 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useTheme } from "@/theme/ThemeContext";
 import { useWelcomeDialog } from "@/components/WelcomeDialog";
+import { useLocation } from "react-router-dom";
 
 const menuItems = [
   {
@@ -71,8 +72,10 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMobileSub, setOpenMobileSub] = useState<string | null>(null);
+
   const { isDark, toggle } = useTheme();
   const { openDialog } = useWelcomeDialog();
+  const location = useLocation();
 
   const logoSrc = isDark ? "/logo-dark.jpeg" : "/logo-light.jpeg";
 
@@ -81,6 +84,13 @@ const Navbar = () => {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const resolveLink = (href: string) => {
+    if (href.startsWith("#")) {
+      return location.pathname === "/" ? href : `/${href}`;
+    }
+    return href;
+  };
 
   return (
     <motion.nav
@@ -94,12 +104,15 @@ const Navbar = () => {
       }`}
     >
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
+        
         {/* Logo */}
         <a
-          href="#hero"
+          href="/#hero"
           onClick={(e) => {
-            e.preventDefault();
-            openDialog();
+            if (location.pathname === "/") {
+              e.preventDefault();
+              openDialog();
+            }
           }}
           className="flex items-center gap-3"
         >
@@ -108,27 +121,31 @@ const Navbar = () => {
             alt="Anveshika"
             className="h-10 w-10 rounded-full object-cover border border-primary/30"
           />
-          <span className="font-display text-xl font-bold gradient-text">Anveshika</span>
+          <span className="font-display text-xl font-bold gradient-text">
+            Anveshika
+          </span>
         </a>
 
         <div className="flex items-center gap-3">
+
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center gap-1">
             {menuItems.map((item) => (
               <div key={item.label} className="nav-item relative">
                 <a
-                  href={item.href}
+                  href={resolveLink(item.href)}
                   className="flex items-center gap-1 px-4 py-2 text-base font-medium text-foreground/80 hover:text-primary transition-colors rounded-lg hover:bg-primary/5"
                 >
                   {item.label}
                   {item.submenu && <ChevronDown className="w-3.5 h-3.5" />}
                 </a>
+
                 {item.submenu && (
                   <div className="nav-dropdown">
                     {item.submenu.map((sub) => (
                       <a
                         key={sub.label}
-                        href={sub.href}
+                        href={resolveLink(sub.href)}
                         className="block px-4 py-2.5 text-base text-foreground/90 hover:text-primary hover:bg-primary/5 transition-all"
                       >
                         {sub.label}
@@ -140,7 +157,7 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Theme toggle */}
+          {/* Theme Toggle */}
           <ThemeToggle isDark={isDark} toggle={toggle} />
 
           {/* Mobile Toggle */}
@@ -148,7 +165,11 @@ const Navbar = () => {
             onClick={() => setMobileOpen(!mobileOpen)}
             className="lg:hidden text-foreground p-2"
           >
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
       </div>
@@ -168,18 +189,27 @@ const Navbar = () => {
                   <button
                     onClick={() => {
                       if (item.submenu) {
-                        setOpenMobileSub(openMobileSub === item.label ? null : item.label);
+                        setOpenMobileSub(
+                          openMobileSub === item.label ? null : item.label
+                        );
                       } else {
+                        window.location.href = resolveLink(item.href);
                         setMobileOpen(false);
                       }
                     }}
                     className="w-full flex items-center justify-between px-3 py-3 text-base text-foreground/80 hover:text-primary transition-colors rounded-lg"
                   >
                     <span className="font-medium text-base">{item.label}</span>
+
                     {item.submenu && (
-                      <ChevronDown className={`w-4 h-4 transition-transform ${openMobileSub === item.label ? "rotate-180" : ""}`} />
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${
+                          openMobileSub === item.label ? "rotate-180" : ""
+                        }`}
+                      />
                     )}
                   </button>
+
                   <AnimatePresence>
                     {item.submenu && openMobileSub === item.label && (
                       <motion.div
@@ -191,7 +221,7 @@ const Navbar = () => {
                         {item.submenu.map((sub) => (
                           <a
                             key={sub.label}
-                            href={sub.href}
+                            href={resolveLink(sub.href)}
                             onClick={() => setMobileOpen(false)}
                             className="block px-3 py-2.5 text-base text-foreground/90 hover:text-primary transition-colors"
                           >

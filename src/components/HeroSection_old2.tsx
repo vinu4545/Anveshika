@@ -9,14 +9,6 @@ import { useTheme } from "@/theme/ThemeContext";
 // Tree CSS  (wind keyframes · fruit animations · leaf color vars)
 // ─────────────────────────────────────────────────────────────────────────────
 const TREE_CSS = `
-  /* Tree SVG: scale by height so aspect ratio is preserved, width is auto */
-  #Layer_1 {
-    height: 100% !important;
-    width: auto !important;
-    display: block;
-    margin: 0 auto;
-  }
-
   @keyframes fruitWind_about {
     0% { transform: rotate(0.000deg); }
     20% { transform: rotate(0.660deg); }
@@ -190,23 +182,22 @@ const TREE_JS = `function rand(a,b){ return a + Math.random()*(b-a); }
 function rsign(){ return Math.random()>.5?1:-1; }
 
 function makeWindFrames(){
-  const wd   = rsign() * rand(80, 240);   
-  const fall = rand(320, 640);            
-  const rot  = rsign() * rand(160, 320);  
-  const wb   = rsign() * rand(12, 30);    
+  const wd   = rsign() * rand(90, 320);   // horizontal wind drift
+  const fall = rand(280, 560);            // vertical fall distance
+  const rot  = rsign() * rand(240, 500);  // total spin degrees
+  const wb   = rsign() * rand(18, 50);    // lateral flutter wobble
 
   return [
-    { transform:'translate(0,0) rotate(0deg) scale(1)', opacity:1, offset:0 },
-
-    { transform:\`translate(\${wd*.15}px,\${fall*.15}px) rotate(\${rot*.15}deg) scale(.98)\`, opacity:.98, offset:.2 },
-
-    { transform:\`translate(\${wd*.35+wb}px,\${fall*.35}px) rotate(\${rot*.35}deg) scale(.92)\`, opacity:.92, offset:.45 },
-
-    { transform:\`translate(\${wd*.65-wb*.6}px,\${fall*.65}px) rotate(\${rot*.65}deg) scale(.72)\`, opacity:.65, offset:.75 },
-
-    { transform:\`translate(\${wd}px,\${fall}px) rotate(\${rot}deg) scale(.25)\`, opacity:0, offset:1 },
+    { transform:'translate(0,0) rotate(0deg) scale(1)',                                      opacity:1,   offset:0    },
+    { transform:\`translate(\${wd*.06}px,\${rand(-25,-8)}px) rotate(\${rot*.03}deg) scale(1.04)\`, opacity:1,   offset:0.07 },
+    { transform:\`translate(\${wd*.22}px,\${rand(-8,10)}px)  rotate(\${rot*.12}deg) scale(.97)\`,  opacity:1,   offset:0.18 },
+    { transform:\`translate(\${wd*.42+wb}px,\${fall*.28}px)  rotate(\${rot*.35}deg) scale(.88)\`,  opacity:.92, offset:0.38 },
+    { transform:\`translate(\${wd*.63-wb*.6}px,\${fall*.52}px) rotate(\${rot*.57}deg) scale(.73)\`,opacity:.72, offset:0.56 },
+    { transform:\`translate(\${wd*.80+wb*.3}px,\${fall*.74}px) rotate(\${rot*.76}deg) scale(.52)\`,opacity:.40, offset:0.74 },
+    { transform:\`translate(\${wd}px,\${fall}px)              rotate(\${rot}deg)     scale(.12)\`, opacity:0,   offset:1    },
   ];
 }
+
 function setupLeaf(el){
   let busy = false;
   el.addEventListener('click', function(e){
@@ -217,10 +208,10 @@ function setupLeaf(el){
     // Cancel branch-sway while falling
     el.classList.add('leaf-falling');
 
-    const dur  = rand(2200, 3400);
+    const dur  = rand(1300, 2100);
     const anim = el.animate(makeWindFrames(), {
       duration: dur,
-      easing:'cubic-bezier(.33,.02,.21,1)',
+      easing:  'cubic-bezier(.22,.61,.36,1)',
       fill:    'forwards'
     });
 
@@ -241,7 +232,7 @@ function setupLeaf(el){
         ],{ duration:680, easing:'cubic-bezier(.34,1.56,.64,1)', fill:'forwards' });
 
         regrow.onfinish = ()=>{ regrow.cancel(); el.classList.remove('leaf-regrowing'); busy=false; };
-      }, rand(1000,2000));
+      }, rand(2000,3000));
     };
   });
 }
@@ -265,7 +256,7 @@ function fallLeaf(el, delay){
   return new Promise(function(resolve){
     setTimeout(function(){
       el.classList.add('leaf-falling');
-      var dur  = rand(1800,3000);
+      var dur  = rand(900,1600);
       var anim = el.animate(makeWindFrames(),{
         duration:dur, easing:'cubic-bezier(.22,.61,.36,1)', fill:'forwards'
       });
@@ -392,11 +383,11 @@ const HeroSection = () => {
       {/* Sanskrit pattern overlay */}
       <div className="absolute inset-0 pattern-overlay opacity-30 pointer-events-none z-0" />
 
-      {/* ── Tree SVG — scales to full viewport height, width auto to maintain aspect ── */}
+      {/* ── Tree SVG (dangerouslySetInnerHTML keeps raw SVG attrs intact) ── */}
       <div
         ref={svgWrapperRef}
-        className="relative z-10 flex justify-center"
-        style={{ height: "100vh", width: "100%" }}
+        className="relative z-10 w-full"
+        style={{ maxHeight: "75vh", overflow: "hidden" }}
         dangerouslySetInnerHTML={{ __html: TREE_SVG_HTML }}
       />
 

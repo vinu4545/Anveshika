@@ -1,22 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Compass, BookOpen, Users } from "lucide-react";
 import ParticleField from "./ParticleField";
 import { TREE_SVG_HTML } from "./treeSvg";
-import { useTheme } from "@/theme/ThemeContext";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tree CSS  (wind keyframes · fruit animations · leaf color vars)
 // ─────────────────────────────────────────────────────────────────────────────
 const TREE_CSS = `
-  /* Tree SVG: scale by height so aspect ratio is preserved, width is auto */
-  #Layer_1 {
-    height: 100% !important;
-    width: auto !important;
-    display: block;
-    margin: 0 auto;
-  }
-
   @keyframes fruitWind_about {
     0% { transform: rotate(0.000deg); }
     20% { transform: rotate(0.660deg); }
@@ -125,7 +116,57 @@ const TREE_CSS = `
 }
 
 
-
+/* ── Theme Toggle ───────────────────────────────────── */
+#theme-btn {
+  position: fixed;
+  top: 18px;
+  right: 22px;
+  z-index: 100;
+  width: 52px;
+  height: 28px;
+  border-radius: 14px;
+  border: 2px solid rgba(120,80,40,0.5);
+  background: #d4a96a;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  display: flex;
+  align-items: center;
+}
+#theme-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(160,100,40,0.5);
+}
+#theme-btn .toggle-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  margin-left: 2px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), background 0.35s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+}
+/* Dark mode state */
+body.dark #theme-btn {
+  background: #1a1a2e;
+  border-color: rgba(255,255,255,0.15);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+body.dark #theme-btn .toggle-thumb {
+  transform: translateX(22px);
+  background: #2a2a3e;
+}
+/* Dark body */
+body.dark {
+  background: #000000 !important;
+}
+/* ── End Theme Toggle ───────────────────────────────── */
 
 
 :root {
@@ -190,23 +231,22 @@ const TREE_JS = `function rand(a,b){ return a + Math.random()*(b-a); }
 function rsign(){ return Math.random()>.5?1:-1; }
 
 function makeWindFrames(){
-  const wd   = rsign() * rand(80, 240);   
-  const fall = rand(320, 640);            
-  const rot  = rsign() * rand(160, 320);  
-  const wb   = rsign() * rand(12, 30);    
+  const wd   = rsign() * rand(90, 320);   // horizontal wind drift
+  const fall = rand(280, 560);            // vertical fall distance
+  const rot  = rsign() * rand(240, 500);  // total spin degrees
+  const wb   = rsign() * rand(18, 50);    // lateral flutter wobble
 
   return [
-    { transform:'translate(0,0) rotate(0deg) scale(1)', opacity:1, offset:0 },
-
-    { transform:\`translate(\${wd*.15}px,\${fall*.15}px) rotate(\${rot*.15}deg) scale(.98)\`, opacity:.98, offset:.2 },
-
-    { transform:\`translate(\${wd*.35+wb}px,\${fall*.35}px) rotate(\${rot*.35}deg) scale(.92)\`, opacity:.92, offset:.45 },
-
-    { transform:\`translate(\${wd*.65-wb*.6}px,\${fall*.65}px) rotate(\${rot*.65}deg) scale(.72)\`, opacity:.65, offset:.75 },
-
-    { transform:\`translate(\${wd}px,\${fall}px) rotate(\${rot}deg) scale(.25)\`, opacity:0, offset:1 },
+    { transform:'translate(0,0) rotate(0deg) scale(1)',                                      opacity:1,   offset:0    },
+    { transform:\`translate(\${wd*.06}px,\${rand(-25,-8)}px) rotate(\${rot*.03}deg) scale(1.04)\`, opacity:1,   offset:0.07 },
+    { transform:\`translate(\${wd*.22}px,\${rand(-8,10)}px)  rotate(\${rot*.12}deg) scale(.97)\`,  opacity:1,   offset:0.18 },
+    { transform:\`translate(\${wd*.42+wb}px,\${fall*.28}px)  rotate(\${rot*.35}deg) scale(.88)\`,  opacity:.92, offset:0.38 },
+    { transform:\`translate(\${wd*.63-wb*.6}px,\${fall*.52}px) rotate(\${rot*.57}deg) scale(.73)\`,opacity:.72, offset:0.56 },
+    { transform:\`translate(\${wd*.80+wb*.3}px,\${fall*.74}px) rotate(\${rot*.76}deg) scale(.52)\`,opacity:.40, offset:0.74 },
+    { transform:\`translate(\${wd}px,\${fall}px)              rotate(\${rot}deg)     scale(.12)\`, opacity:0,   offset:1    },
   ];
 }
+
 function setupLeaf(el){
   let busy = false;
   el.addEventListener('click', function(e){
@@ -217,10 +257,10 @@ function setupLeaf(el){
     // Cancel branch-sway while falling
     el.classList.add('leaf-falling');
 
-    const dur  = rand(2200, 3400);
+    const dur  = rand(1300, 2100);
     const anim = el.animate(makeWindFrames(), {
       duration: dur,
-      easing:'cubic-bezier(.33,.02,.21,1)',
+      easing:  'cubic-bezier(.22,.61,.36,1)',
       fill:    'forwards'
     });
 
@@ -241,7 +281,7 @@ function setupLeaf(el){
         ],{ duration:680, easing:'cubic-bezier(.34,1.56,.64,1)', fill:'forwards' });
 
         regrow.onfinish = ()=>{ regrow.cancel(); el.classList.remove('leaf-regrowing'); busy=false; };
-      }, rand(1000,2000));
+      }, rand(2000,3000));
     };
   });
 }
@@ -265,7 +305,7 @@ function fallLeaf(el, delay){
   return new Promise(function(resolve){
     setTimeout(function(){
       el.classList.add('leaf-falling');
-      var dur  = rand(1800,3000);
+      var dur  = rand(900,1600);
       var anim = el.animate(makeWindFrames(),{
         duration:dur, easing:'cubic-bezier(.22,.61,.36,1)', fill:'forwards'
       });
@@ -300,35 +340,22 @@ function regrowLeaf(el, delay){
 }
 
 // Expose to theme toggle
-// NOTE: ThemeContext has already applied/removed body.dark before this is called.
-// We temporarily revert body.dark so leaves fall in the OLD color, then reapply
-// after all leaves are hidden so the color swap is invisible.
 window.themeLeafTransition = function(toDark){
   var leaves = Array.from(document.querySelectorAll('.leaf-group'));
-
-  // Revert to old color while leaves are visible and falling
-  if (toDark) {
-    document.body.classList.remove('dark');
-  } else {
-    document.body.classList.add('dark');
-  }
-
-  // Stagger falls over ~1.8s
-  var fallPromises = leaves.map(function(el){
+  
+  // Stagger falls — all leaves fall over ~1.8s total
+  var fallPromises = leaves.map(function(el, i){
     var delay = rand(0, 1800);
     return fallLeaf(el, delay);
   });
 
   Promise.all(fallPromises).then(function(){
-    // All leaves are now hidden — snap to new color silently
-    if (toDark) {
-      document.body.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark');
-    }
+    // All fallen — now switch color theme instantly (vars swap)
+    if(toDark) document.body.classList.add('dark');
+    else       document.body.classList.remove('dark');
 
-    // Regrow staggered in new color
-    var regrowPromises = leaves.map(function(el){
+    // Stagger regrow
+    var regrowPromises = leaves.map(function(el, i){
       var delay = rand(0, 2200);
       return regrowLeaf(el, delay);
     });
@@ -340,10 +367,18 @@ window.themeLeafTransition = function(toDark){
 
 const HeroSection = () => {
   const svgWrapperRef = useRef<HTMLDivElement>(null);
-  // Read theme state from the site-wide ThemeContext (same source as Navbar toggle)
-  const { isDark } = useTheme();
-  // Track previous isDark so we only fire the leaf animation on actual changes
-  const prevIsDarkRef = useRef<boolean>(isDark);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") === "dark";
+    }
+    return false;
+  });
+
+  // Sync dark class on <body> whenever isDark changes
+  useEffect(() => {
+    document.body.classList.toggle("dark", isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }, [isDark]);
 
   // Inject tree CSS into <head> once on mount
   useEffect(() => {
@@ -369,17 +404,17 @@ const HeroSection = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // When Navbar's ThemeToggle fires, trigger leaf fall → color swap → regrow
-  useEffect(() => {
-    // Skip on first mount (no transition needed, just paint the right color)
-    if (prevIsDarkRef.current === isDark) return;
-    prevIsDarkRef.current = isDark;
-
+  // Theme toggle — triggers leaf fall → color swap → regrow if JS is ready
+  const handleThemeToggle = () => {
+    const next = !isDark;
     const w = window as Window & { themeLeafTransition?: (d: boolean) => void };
     if (w.themeLeafTransition) {
-      w.themeLeafTransition(isDark);
+      w.themeLeafTransition(next);
+      setTimeout(() => setIsDark(next), 100);
+    } else {
+      setIsDark(next);
     }
-  }, [isDark]);
+  };
 
   return (
     <section
@@ -392,11 +427,41 @@ const HeroSection = () => {
       {/* Sanskrit pattern overlay */}
       <div className="absolute inset-0 pattern-overlay opacity-30 pointer-events-none z-0" />
 
-      {/* ── Tree SVG — scales to full viewport height, width auto to maintain aspect ── */}
+      {/* ── Theme toggle pill ───────────────────────────────────────────── */}
+      <button
+        onClick={handleThemeToggle}
+        aria-label="Toggle dark mode"
+        className="fixed top-4 right-5 z-50 flex items-center"
+        style={{
+          width: 52, height: 28, borderRadius: 14,
+          border: `2px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(120,80,40,0.5)"}`,
+          background: isDark ? "#1a1a2e" : "#d4a96a",
+          cursor: "pointer", padding: 0,
+          boxShadow: isDark ? "0 2px 8px rgba(0,0,0,0.5)" : "0 2px 8px rgba(0,0,0,0.18)",
+          transition: "background 0.35s ease, border-color 0.35s ease",
+        }}
+      >
+        <span
+          style={{
+            width: 22, height: 22, borderRadius: "50%",
+            background: isDark ? "#2a2a3e" : "#fff",
+            marginLeft: 2,
+            boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
+            transform: isDark ? "translateX(22px)" : "translateX(0)",
+            transition: "transform 0.35s cubic-bezier(0.34,1.56,0.64,1), background 0.35s ease",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 13,
+          }}
+        >
+          {isDark ? "🌙" : "☀️"}
+        </span>
+      </button>
+
+      {/* ── Tree SVG (dangerouslySetInnerHTML keeps raw SVG attrs intact) ── */}
       <div
         ref={svgWrapperRef}
-        className="relative z-10 flex justify-center"
-        style={{ height: "100vh", width: "100%" }}
+        className="relative z-10 w-full"
+        style={{ overflow: "hidden" }}
         dangerouslySetInnerHTML={{ __html: TREE_SVG_HTML }}
       />
 
